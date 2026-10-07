@@ -16,11 +16,10 @@
         android:textSize="16sp"
         android:paddingBottom="8dp" />
 
-    <TextView
-        android:id="@+id/widgetTasks"
+    <LinearLayout
+        android:id="@+id/widgetTasksContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Нет активных задач"
-        android:textColor="#EAEAEA"
-        android:textSize="14sp" />
+        android:orientation="vertical" />
+
 </LinearLayout>

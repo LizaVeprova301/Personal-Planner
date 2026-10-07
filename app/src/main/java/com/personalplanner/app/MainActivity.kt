@@ -13,6 +13,8 @@ import com.personalplanner.app.ui.ArchiveScreen
 import com.personalplanner.app.ui.TaskScreen
 import com.personalplanner.app.ui.theme.PersonalPlannerTheme
 import com.personalplanner.app.widget.TaskWidget
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 enum class AppScreen {
     TASKS,
@@ -26,12 +28,18 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
+        val taskManager = TaskManager.getInstance(this)
+
+        lifecycle.addObserver(
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    taskManager.reloadTasks()
+                }
+            }
+        )
+
         setContent {
             PersonalPlannerTheme {
-
-                val taskManager = remember {
-                    TaskManager.getInstance(this@MainActivity)
-                }
 
                 // update widget only after TaskManager is initialized
                 remember {

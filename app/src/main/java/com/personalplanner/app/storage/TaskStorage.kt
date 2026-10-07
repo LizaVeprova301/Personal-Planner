@@ -31,7 +31,7 @@ class TaskStorage(
 
         preferences.edit()
             .putString("tasks", jsonArray.toString())
-            .apply()
+            .commit()
     }
 
     fun loadTasks(): List<Task> {

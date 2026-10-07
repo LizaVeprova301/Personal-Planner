@@ -47,6 +47,12 @@ class TaskManager private constructor(
     }
 
     fun getTasks(): List<Task> = tasks
+    fun reloadTasks() {
+        val savedTasks = storage.loadTasks()
+
+        tasks.clear()
+        tasks.addAll(savedTasks)
+    }
 
     fun getActiveTasks(): List<Task> =
         tasks.filter { !it.deleted }
