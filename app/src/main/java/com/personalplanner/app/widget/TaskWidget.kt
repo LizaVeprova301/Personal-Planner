@@ -16,7 +16,7 @@ class TaskWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
-        updateWidget(context, appWidgetManager, appWidgetIds)
+        updateWidgets(context, appWidgetManager, appWidgetIds)
     }
 
     companion object {
@@ -25,35 +25,38 @@ class TaskWidget : AppWidgetProvider() {
             val appWidgetIds = appWidgetManager.getAppWidgetIds(
                 ComponentName(context, TaskWidget::class.java)
             )
-
-            updateWidget(context, appWidgetManager, appWidgetIds)
+            updateWidgets(context, appWidgetManager, appWidgetIds)
         }
 
-        private fun updateWidget(
+        private fun updateWidgets(
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetIds: IntArray
         ) {
-            val tasks = TaskStorage(context)
-                .loadTasks()
-                .filter { !it.deleted }
+            try {
+                val tasks = TaskStorage(context)
+                    .loadTasks()
+                    .filter { !it.deleted }
 
-            val widgetText = if (tasks.isEmpty()) {
-                "Нет задач"
-            } else {
-                tasks.joinToString("\n") { task ->
-                    val status = if (task.completed) "✓" else "☐"
-                    "$status ${task.text}"
+                val widgetText = if (tasks.isEmpty()) {
+                    "Нет задач"
+                } else {
+                    tasks.joinToString("\n") { task ->
+                        val status = if (task.completed) "✓" else "☐"
+                        "$status ${task.text}"
+                    }
                 }
-            }
 
-            val views = RemoteViews(context.packageName, R.layout.task_widget).apply {
-                setTextViewText(R.id.widgetTitle, "Задачи")
-                setTextViewText(R.id.widgetTasks, widgetText)
-            }
+                val views = RemoteViews(context.packageName, R.layout.task_widget).apply {
+                    setTextViewText(R.id.widgetTitle, "Задачи")
+                    setTextViewText(R.id.widgetTasks, widgetText)
+                }
 
-            appWidgetIds.forEach { appWidgetId ->
-                appWidgetManager.updateAppWidget(appWidgetId, views)
+                appWidgetIds.forEach { appWidgetId ->
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
