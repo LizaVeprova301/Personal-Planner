@@ -16,23 +16,38 @@ class TaskWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
+
         if (appWidgetIds.isNotEmpty()) {
-            updateWidgets(context, appWidgetManager, appWidgetIds)
+            updateWidgets(
+                context,
+                appWidgetManager,
+                appWidgetIds
+            )
         }
     }
 
     companion object {
+
         fun updateAll(context: Context) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val componentName = ComponentName(context, TaskWidget::class.java)
-            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
-            
-            // If no widgets are added yet, do nothing
+
+            val componentName = ComponentName(
+                context,
+                TaskWidget::class.java
+            )
+
+            val appWidgetIds =
+                appWidgetManager.getAppWidgetIds(componentName)
+
             if (appWidgetIds.isEmpty()) {
                 return
             }
-            
-            updateWidgets(context, appWidgetManager, appWidgetIds)
+
+            updateWidgets(
+                context,
+                appWidgetManager,
+                appWidgetIds
+            )
         }
 
         private fun updateWidgets(
@@ -40,32 +55,41 @@ class TaskWidget : AppWidgetProvider() {
             appWidgetManager: AppWidgetManager,
             appWidgetIds: IntArray
         ) {
-            try {
-                // Read tasks from storage
-                val tasks = TaskStorage(context)
-                    .loadTasks()
-                    .filter { !it.deleted }
-                    .filter { !it.completed }  // Show only active tasks
+            val tasks = TaskStorage(context)
+                .loadTasks()
+                .filter { !it.deleted }
 
-                val widgetText = if (tasks.isEmpty()) {
-                    "Нет активных задач"
-                } else {
-                    tasks.joinToString("\n") { task ->
-                        val status = if (task.completed) "✓" else "☐"
-                        "$status ${task.text}"
-                    }
+            val widgetText = if (tasks.isEmpty()) {
+                "Нет задач"
+            } else {
+                tasks.joinToString("\n") { task ->
+                    val checkbox = if (task.completed) "☑" else "☐"
+                    "$checkbox ${task.text}"
+                }
+            }
+
+            appWidgetIds.forEach { appWidgetId ->
+
+                val views = RemoteViews(
+                    context.packageName,
+                    R.layout.task_widget
+                ).apply {
+
+                    setTextViewText(
+                        R.id.widgetTitle,
+                        "Задачи"
+                    )
+
+                    setTextViewText(
+                        R.id.widgetTasks,
+                        widgetText
+                    )
                 }
 
-                // Update each widget instance
-                appWidgetIds.forEach { appWidgetId ->
-                    val views = RemoteViews(context.packageName, R.layout.task_widget).apply {
-                        setTextViewText(R.id.widgetTitle, "Задачи")
-                        setTextViewText(R.id.widgetTasks, widgetText)
-                    }
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                appWidgetManager.updateAppWidget(
+                    appWidgetId,
+                    views
+                )
             }
         }
     }

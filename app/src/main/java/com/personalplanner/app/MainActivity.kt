@@ -8,10 +8,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.personalplanner.app.manager.TaskManager
 import com.personalplanner.app.ui.ArchiveScreen
 import com.personalplanner.app.ui.TaskScreen
 import com.personalplanner.app.ui.theme.PersonalPlannerTheme
-import com.personalplanner.app.manager.TaskManager
 import com.personalplanner.app.widget.TaskWidget
 
 enum class AppScreen {
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     TaskManager.getInstance(this@MainActivity)
                 }
 
-                // Update widget after TaskManager is initialized
+                // update widget only after TaskManager is initialized
                 remember {
                     TaskWidget.updateAll(this@MainActivity)
                     null
@@ -44,7 +44,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 when (currentScreen) {
-
                     AppScreen.TASKS -> {
                         TaskScreen(
                             taskManager = taskManager,

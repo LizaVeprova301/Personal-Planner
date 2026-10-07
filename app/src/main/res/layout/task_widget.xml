@@ -20,7 +20,7 @@
         android:id="@+id/widgetTasks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Нет задач"
+        android:text="Нет активных задач"
         android:textColor="#EAEAEA"
         android:textSize="14sp" />
 </LinearLayout>

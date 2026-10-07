@@ -28,21 +28,19 @@ class TaskManager private constructor(
 
     private val storage = TaskStorage(context)
     private val scope = CoroutineScope(Dispatchers.IO)
-
     private val tasks = mutableStateListOf<Task>()
 
     init {
         val savedTasks = storage.loadTasks()
 
         if (savedTasks.isEmpty()) {
-            // Create default tasks and SAVE them to storage
             val defaultTasks = listOf(
                 Task(1, "Сделать презентацию"),
                 Task(2, "Позвонить клиенту"),
                 Task(3, "Купить билеты")
             )
             tasks.addAll(defaultTasks)
-            storage.saveTasks(tasks)  // ✅ SAVE default tasks to disk!
+            storage.saveTasks(tasks)
         } else {
             tasks.addAll(savedTasks)
         }
@@ -50,61 +48,55 @@ class TaskManager private constructor(
 
     fun getTasks(): List<Task> = tasks
 
-    fun getActiveTasks(): List<Task> = tasks.filter { !it.deleted }
+    fun getActiveTasks(): List<Task> =
+        tasks.filter { !it.deleted }
 
     fun getArchivedTasks(): List<Task> = tasks.filter {
         it.completed && !it.deletedFromArchive
     }
 
     fun addTask(text: String) {
-        if (text.isBlank()) {
-            return
-        }
+        if (text.isBlank()) return
 
         val nextId = if (tasks.isEmpty()) 1 else tasks.maxOf { it.id } + 1
-
         tasks.add(Task(id = nextId, text = text.trim()))
         storage.saveTasks(tasks)
-        updateWidget()  // Update widget immediately
+        updateWidget()
     }
 
     fun setTaskCompleted(id: Long, completed: Boolean) {
         val index = tasks.indexOfFirst { it.id == id }
-
         if (index != -1) {
             tasks[index] = tasks[index].copy(completed = completed)
             storage.saveTasks(tasks)
-            updateWidget()  // Update widget immediately
+            updateWidget()
         }
     }
 
     fun deleteTask(id: Long) {
         val index = tasks.indexOfFirst { it.id == id }
-
         if (index != -1) {
             tasks[index] = tasks[index].copy(deleted = true)
             storage.saveTasks(tasks)
-            updateWidget()  // Update widget immediately
+            updateWidget()
         }
     }
 
     fun deleteTaskFromArchive(id: Long) {
         val index = tasks.indexOfFirst { it.id == id }
-
         if (index != -1) {
             tasks[index] = tasks[index].copy(
                 completed = false,
                 deletedFromArchive = false
             )
             storage.saveTasks(tasks)
-            updateWidget()  // Update widget immediately
+            updateWidget()
         }
     }
 
     private fun updateWidget() {
         scope.launch {
             try {
-                // ✅ Call updateAll which reads from storage directly
                 TaskWidget.updateAll(context)
             } catch (e: Exception) {
                 e.printStackTrace()
