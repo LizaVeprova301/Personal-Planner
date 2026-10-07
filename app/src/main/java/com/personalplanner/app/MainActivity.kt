@@ -24,9 +24,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Update widget on app launch
-        TaskWidget.updateAll(this)
-
         enableEdgeToEdge()
 
         setContent {
@@ -34,6 +31,12 @@ class MainActivity : ComponentActivity() {
 
                 val taskManager = remember {
                     TaskManager.getInstance(this@MainActivity)
+                }
+
+                // Update widget after TaskManager is initialized
+                remember {
+                    TaskWidget.updateAll(this@MainActivity)
+                    null
                 }
 
                 var currentScreen by remember {

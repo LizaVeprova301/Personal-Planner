@@ -16,15 +16,22 @@ class TaskWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
-        updateWidgets(context, appWidgetManager, appWidgetIds)
+        if (appWidgetIds.isNotEmpty()) {
+            updateWidgets(context, appWidgetManager, appWidgetIds)
+        }
     }
 
     companion object {
         fun updateAll(context: Context) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val appWidgetIds = appWidgetManager.getAppWidgetIds(
-                ComponentName(context, TaskWidget::class.java)
-            )
+            val componentName = ComponentName(context, TaskWidget::class.java)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
+            
+            // If no widgets are added yet, do nothing
+            if (appWidgetIds.isEmpty()) {
+                return
+            }
+            
             updateWidgets(context, appWidgetManager, appWidgetIds)
         }
 
@@ -34,12 +41,14 @@ class TaskWidget : AppWidgetProvider() {
             appWidgetIds: IntArray
         ) {
             try {
+                // Read tasks from storage
                 val tasks = TaskStorage(context)
                     .loadTasks()
                     .filter { !it.deleted }
+                    .filter { !it.completed }  // Show only active tasks
 
                 val widgetText = if (tasks.isEmpty()) {
-                    "Нет задач"
+                    "Нет активных задач"
                 } else {
                     tasks.joinToString("\n") { task ->
                         val status = if (task.completed) "✓" else "☐"
@@ -47,12 +56,12 @@ class TaskWidget : AppWidgetProvider() {
                     }
                 }
 
-                val views = RemoteViews(context.packageName, R.layout.task_widget).apply {
-                    setTextViewText(R.id.widgetTitle, "Задачи")
-                    setTextViewText(R.id.widgetTasks, widgetText)
-                }
-
+                // Update each widget instance
                 appWidgetIds.forEach { appWidgetId ->
+                    val views = RemoteViews(context.packageName, R.layout.task_widget).apply {
+                        setTextViewText(R.id.widgetTitle, "Задачи")
+                        setTextViewText(R.id.widgetTasks, widgetText)
+                    }
                     appWidgetManager.updateAppWidget(appWidgetId, views)
                 }
             } catch (e: Exception) {

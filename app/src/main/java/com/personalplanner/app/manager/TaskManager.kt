@@ -65,7 +65,7 @@ class TaskManager private constructor(
 
         tasks.add(Task(id = nextId, text = text.trim()))
         storage.saveTasks(tasks)
-        updateWidget()
+        updateWidget()  // Update widget immediately
     }
 
     fun setTaskCompleted(id: Long, completed: Boolean) {
@@ -74,7 +74,7 @@ class TaskManager private constructor(
         if (index != -1) {
             tasks[index] = tasks[index].copy(completed = completed)
             storage.saveTasks(tasks)
-            updateWidget()
+            updateWidget()  // Update widget immediately
         }
     }
 
@@ -84,7 +84,7 @@ class TaskManager private constructor(
         if (index != -1) {
             tasks[index] = tasks[index].copy(deleted = true)
             storage.saveTasks(tasks)
-            updateWidget()
+            updateWidget()  // Update widget immediately
         }
     }
 
@@ -97,13 +97,14 @@ class TaskManager private constructor(
                 deletedFromArchive = false
             )
             storage.saveTasks(tasks)
-            updateWidget()
+            updateWidget()  // Update widget immediately
         }
     }
 
     private fun updateWidget() {
         scope.launch {
             try {
+                // ✅ Call updateAll which reads from storage directly
                 TaskWidget.updateAll(context)
             } catch (e: Exception) {
                 e.printStackTrace()
