@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.glance.appwidget.GlanceAppWidgetManager
 
+
 class TaskManager private constructor(
     private val context: Context
 ) {
@@ -135,9 +136,7 @@ class TaskManager private constructor(
     private fun updateWidget() {
         scope.launch {
             try {
-                println("WIDGET DEBUG: updateWidget() запущен")
                 TaskWidget().updateAll(context)
-                println("WIDGET DEBUG: updateAll() выполнен без ошибок")
             } catch (e: Exception) {
                 println("WIDGET DEBUG: ОШИБКА при updateAll: ${e.message}")
                 e.printStackTrace()

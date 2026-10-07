@@ -10,10 +10,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.personalplanner.app.ui.ArchiveScreen
 import com.personalplanner.app.ui.TaskScreen
 import com.personalplanner.app.ui.theme.PersonalPlannerTheme
 import com.personalplanner.app.manager.TaskManager
+import com.personalplanner.app.widget.TaskWidget
+import androidx.glance.appwidget.updateAll
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 enum class AppScreen {
     TASKS,
@@ -58,6 +63,16 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+            }
+        }
+        updateWidgetAsync()
+    }
+    private fun updateWidgetAsync() {
+        lifecycleScope.launch {
+            try {
+                TaskWidget().updateAll(this@MainActivity)
+            } catch (e: Exception) {
+                println("WIDGET DEBUG: Ошибка обновления виджета: ${e.message}")
             }
         }
     }
