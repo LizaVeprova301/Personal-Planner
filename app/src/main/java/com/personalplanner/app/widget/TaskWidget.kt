@@ -1,16 +1,14 @@
 package com.personalplanner.app.widget
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
-import android.graphics.Paint
-import android.util.TypedValue
+import android.content.Intent
 import android.widget.RemoteViews
 import com.personalplanner.app.R
 import com.personalplanner.app.storage.TaskStorage
-import android.app.PendingIntent
-import android.content.Intent
 
 class TaskWidget : AppWidgetProvider() {
 
@@ -19,16 +17,19 @@ class TaskWidget : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        super.onUpdate(context, appWidgetManager, appWidgetIds)
+        super.onUpdate(
+            context,
+            appWidgetManager,
+            appWidgetIds
+        )
 
-        if (appWidgetIds.isNotEmpty()) {
-            updateWidgets(
-                context,
-                appWidgetManager,
-                appWidgetIds
-            )
-        }
+        updateWidgets(
+            context,
+            appWidgetManager,
+            appWidgetIds
+        )
     }
+
     override fun onReceive(
         context: Context,
         intent: Intent
@@ -75,7 +76,9 @@ class TaskWidget : AppWidgetProvider() {
         const val EXTRA_TASK_ID = "task_id"
 
         fun updateAll(context: Context) {
-            val appWidgetManager = AppWidgetManager.getInstance(context)
+
+            val appWidgetManager =
+                AppWidgetManager.getInstance(context)
 
             val componentName = ComponentName(
                 context,
@@ -83,7 +86,9 @@ class TaskWidget : AppWidgetProvider() {
             )
 
             val appWidgetIds =
-                appWidgetManager.getAppWidgetIds(componentName)
+                appWidgetManager.getAppWidgetIds(
+                    componentName
+                )
 
             if (appWidgetIds.isEmpty()) {
                 return
@@ -101,9 +106,6 @@ class TaskWidget : AppWidgetProvider() {
             appWidgetManager: AppWidgetManager,
             appWidgetIds: IntArray
         ) {
-            val tasks = TaskStorage(context)
-                .loadTasks()
-                .filter { !it.deleted }
 
             appWidgetIds.forEach { appWidgetId ->
 
@@ -117,92 +119,51 @@ class TaskWidget : AppWidgetProvider() {
                     "Задачи"
                 )
 
-                views.removeAllViews(
-                    R.id.widgetTasksContainer
+                val serviceIntent = Intent(
+                    context,
+                    TaskWidgetService::class.java
+                ).apply {
+                    putExtra(
+                        AppWidgetManager.EXTRA_APPWIDGET_ID,
+                        appWidgetId
+                    )
+                }
+
+                views.setRemoteAdapter(
+                    appWidgetId,
+                    R.id.widgetTasksList,
+                    serviceIntent
                 )
 
-                if (tasks.isEmpty()) {
-
-                    val emptyView = RemoteViews(
-                        context.packageName,
-                        android.R.layout.simple_list_item_1
-                    )
-
-                    emptyView.setTextViewText(
-                        android.R.id.text1,
-                        "Нет задач"
-                    )
-
-                    views.addView(
-                        R.id.widgetTasksContainer,
-                        emptyView
-                    )
-
-                } else {
-
-                    tasks.forEach { task ->
-
-                        val taskView = RemoteViews(
-                            context.packageName,
-                            android.R.layout.simple_list_item_1
-                        )
-                        val intent = Intent(
-                            context,
-                            TaskWidget::class.java
-                        ).apply {
-                            action = ACTION_TOGGLE_TASK
-                            putExtra(EXTRA_TASK_ID, task.id)
-                        }
-
-                        val pendingIntent = PendingIntent.getBroadcast(
-                            context,
-                            task.id.toInt(),
-                            intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                        )
-
-                        taskView.setOnClickPendingIntent(
-                            android.R.id.text1,
-                            pendingIntent
-                        )
-
-                        val checkbox =
-                            if (task.completed) "☑" else "☐"
-
-                        taskView.setTextViewText(
-                            android.R.id.text1,
-                            "$checkbox ${task.text}"
-                        )
-
-                        taskView.setTextColor(
-                            android.R.id.text1,
-                            android.graphics.Color.WHITE
-                        )
-
-                        taskView.setTextViewTextSize(
-                            android.R.id.text1,
-                            TypedValue.COMPLEX_UNIT_SP,
-                            14f
-                        )
-
-                        if (task.completed) {
-                            taskView.setInt(
-                                android.R.id.text1,
-                                "setPaintFlags",
-                                Paint.STRIKE_THRU_TEXT_FLAG
-                            )
-                        }
-
-                        views.addView(
-                            R.id.widgetTasksContainer,
-                            taskView
-                        )
-                    }
+                val clickIntent = Intent(
+                    context,
+                    TaskWidget::class.java
+                ).apply {
+                    action = ACTION_TOGGLE_TASK
                 }
+
+                val clickPendingIntent =
+                    PendingIntent.getBroadcast(
+                        context,
+                        appWidgetId,
+                        clickIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or
+                                PendingIntent.FLAG_MUTABLE
+                    )
+
+                views.setPendingIntentTemplate(
+                    R.id.widgetTasksList,
+                    clickPendingIntent
+                )
 
                 appWidgetManager.updateAppWidget(
                     appWidgetId,
                     views
+                )
+
+                appWidgetManager.notifyAppWidgetViewDataChanged(
+                    appWidgetId,
+                    R.id.widgetTasksList
                 )
             }
         }
