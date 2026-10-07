@@ -63,7 +63,7 @@ class TaskWidget : AppWidgetProvider() {
 
                 storage.saveTasks(tasks)
 
-                updateAll(context)
+                notifyListChanged(context)
             }
         }
     }
@@ -99,6 +99,25 @@ class TaskWidget : AppWidgetProvider() {
                 appWidgetManager,
                 appWidgetIds
             )
+        }
+        private fun notifyListChanged(context: Context) {
+            val appWidgetManager =
+                AppWidgetManager.getInstance(context)
+
+            val componentName = ComponentName(
+                context,
+                TaskWidget::class.java
+            )
+
+            val appWidgetIds =
+                appWidgetManager.getAppWidgetIds(componentName)
+
+            appWidgetIds.forEach { appWidgetId ->
+                appWidgetManager.notifyAppWidgetViewDataChanged(
+                    appWidgetId,
+                    R.id.widgetTasksList
+                )
+            }
         }
 
         private fun updateWidgets(

@@ -21,20 +21,21 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.personalplanner.app.model.Task
 import com.personalplanner.app.manager.TaskManager
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.runtime.key
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.withFrameNanos
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,9 +85,20 @@ fun TaskScreen(
 
     LaunchedEffect(isAddingTask.value) {
         if (isAddingTask.value) {
-            listState.animateScrollToItem(
-                taskManager.getActiveTasks().size
-            )
+            val inputIndex = taskManager.getActiveTasks().size
+
+            listState.animateScrollToItem(inputIndex)
+
+            snapshotFlow {
+                listState.layoutInfo.visibleItemsInfo.any {
+                    it.index == inputIndex
+                }
+            }
+                .filter { it }
+                .first()
+
+            focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
@@ -94,6 +106,7 @@ fun TaskScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
             .padding(16.dp)
     ) {
 
