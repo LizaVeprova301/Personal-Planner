@@ -35,13 +35,14 @@ class TaskManager private constructor(
         val savedTasks = storage.loadTasks()
 
         if (savedTasks.isEmpty()) {
-            tasks.addAll(
-                listOf(
-                    Task(1, "Сделать презентацию"),
-                    Task(2, "Позвонить клиенту"),
-                    Task(3, "Купить билеты")
-                )
+            // Create default tasks and SAVE them to storage
+            val defaultTasks = listOf(
+                Task(1, "Сделать презентацию"),
+                Task(2, "Позвонить клиенту"),
+                Task(3, "Купить билеты")
             )
+            tasks.addAll(defaultTasks)
+            storage.saveTasks(tasks)  // ✅ SAVE default tasks to disk!
         } else {
             tasks.addAll(savedTasks)
         }
