@@ -4,18 +4,18 @@
     android:id="@+id/widgetTaskRow"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="48dp"
+    android:minHeight="36dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="4dp"
     android:paddingEnd="4dp"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp">
+    android:paddingTop="1dp"
+    android:paddingBottom="1dp">
 
     <TextView
         android:id="@+id/widgetCheckbox"
         android:layout_width="32dp"
-        android:layout_height="48dp"
+        android:layout_height="32dp"
         android:gravity="center"
         android:text="☐"
         android:textColor="#FFFFFF"
@@ -30,6 +30,6 @@
         android:paddingStart="8dp"
         android:paddingEnd="4dp"
         android:textColor="#FFFFFF"
-        android:textSize="14sp" />
+        android:textSize="16sp" />
 
 </LinearLayout>

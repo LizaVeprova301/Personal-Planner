@@ -36,6 +36,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,22 +165,30 @@ fun TaskScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 0.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
-                            checked = task.completed,
-                            onCheckedChange = { checked ->
-                                taskManager.setTaskCompleted(
-                                    task.id,
-                                    checked
-                                )
-                            }
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Checkbox(
+                                checked = task.completed,
+                                onCheckedChange = { checked ->
+                                    taskManager.setTaskCompleted(
+                                        task.id,
+                                        checked
+                                    )
+                                },
+                                modifier = Modifier.scale(0.7f)
+                            )
+                        }
 
                         Text(
                             text = task.text,
                             modifier = Modifier.padding(start = 8.dp),
+                            fontSize = 18.sp,
                             textDecoration = if (task.completed) {
                                 TextDecoration.LineThrough
                             } else {
