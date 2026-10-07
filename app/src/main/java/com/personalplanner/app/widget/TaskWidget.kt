@@ -1,48 +1,59 @@
 package com.personalplanner.app.widget
 
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
-import androidx.compose.ui.unit.dp
-import androidx.glance.GlanceId
-import androidx.glance.GlanceModifier
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.provideContent
-import androidx.glance.layout.Column
-import androidx.glance.layout.padding
-import androidx.glance.text.Text
+import android.widget.RemoteViews
+import com.personalplanner.app.R
 import com.personalplanner.app.storage.TaskStorage
 
-class TaskWidget : GlanceAppWidget() {
+class TaskWidget : AppWidgetProvider() {
 
-    override suspend fun provideGlance(
+    override fun onUpdate(
         context: Context,
-        id: GlanceId
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
     ) {
-        println("WIDGET DEBUG: provideGlance ВЫЗВАН")
-        provideContent {
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+        updateWidget(context, appWidgetManager, appWidgetIds)
+    }
 
-            val storage = TaskStorage(context)
-            val tasks = storage.loadTasks()
+    companion object {
+        fun updateAll(context: Context) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(
+                ComponentName(context, TaskWidget::class.java)
+            )
+
+            updateWidget(context, appWidgetManager, appWidgetIds)
+        }
+
+        private fun updateWidget(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            appWidgetIds: IntArray
+        ) {
+            val tasks = TaskStorage(context)
+                .loadTasks()
                 .filter { !it.deleted }
 
-            println("WIDGET DEBUG: задач в storage = ${tasks.size}")
-            tasks.forEach {
-                println("WIDGET DEBUG: задача = '${it.text}', deleted = ${it.deleted}")
+            val widgetText = if (tasks.isEmpty()) {
+                "Нет задач"
+            } else {
+                tasks.joinToString("\n") { task ->
+                    val status = if (task.completed) "✓" else "☐"
+                    "$status ${task.text}"
+                }
             }
 
-            Column(
-                modifier = GlanceModifier
-                    .padding(16.dp)
-            ) {
+            val views = RemoteViews(context.packageName, R.layout.task_widget).apply {
+                setTextViewText(R.id.widgetTitle, "Задачи")
+                setTextViewText(R.id.widgetTasks, widgetText)
+            }
 
-                Text(
-                    text = "Задачи"
-                )
-
-                tasks.forEach { task ->
-                    Text(
-                        text = "☐ ${task.text}"
-                    )
-                }
+            appWidgetIds.forEach { appWidgetId ->
+                appWidgetManager.updateAppWidget(appWidgetId, views)
             }
         }
     }
