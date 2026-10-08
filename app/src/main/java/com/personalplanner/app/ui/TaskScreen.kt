@@ -40,12 +40,12 @@ import androidx.compose.ui.focus.focusRequester
 fun TaskScreen(
     taskManager: TaskManager,
     onOpenArchive: () -> Unit,
-    onOpenHabits: () -> Unit
+    onOpenHabits: () -> Unit,
+    openAddTask: Boolean
 ) {
     var isAddingTask by remember {
-        mutableStateOf(false)
+        mutableStateOf(openAddTask)
     }
-
     var newTaskText by remember {
         mutableStateOf("")
     }

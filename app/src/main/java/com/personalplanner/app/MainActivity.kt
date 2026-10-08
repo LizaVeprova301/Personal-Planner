@@ -36,6 +36,12 @@ class MainActivity : ComponentActivity() {
         )
         AppInitializer.initialize(this)
 
+        val openAddTask =
+            intent.getBooleanExtra(
+                "open_add_task",
+                false
+            )
+
         setContent {
             PersonalPlannerTheme {
 
@@ -53,7 +59,8 @@ class MainActivity : ComponentActivity() {
                             },
                             onOpenHabits = {
                                 currentScreen = AppScreen.HABITS
-                            }
+                            },
+                            openAddTask = openAddTask
                         )
                     }
 
