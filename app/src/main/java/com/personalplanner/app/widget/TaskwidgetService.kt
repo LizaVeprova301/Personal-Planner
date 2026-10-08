@@ -57,13 +57,15 @@ class TaskWidgetFactory(
             task.text
         )
 
-        if (task.completed) {
-            views.setInt(
-                R.id.widgetTaskText,
-                "setPaintFlags",
+        views.setInt(
+            R.id.widgetTaskText,
+            "setPaintFlags",
+            if (task.completed) {
                 android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
-            )
-        }
+            } else {
+                android.graphics.Paint.ANTI_ALIAS_FLAG
+            }
+        )
 
         val intent = Intent().apply {
             putExtra(

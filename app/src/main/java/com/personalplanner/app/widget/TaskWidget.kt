@@ -58,7 +58,12 @@ class TaskWidget : AppWidgetProvider() {
                 val task = tasks[index]
 
                 tasks[index] = task.copy(
-                    completed = !task.completed
+                    completed = !task.completed,
+                    completedAt = if (!task.completed) {
+                        System.currentTimeMillis()
+                    } else {
+                        null
+                    }
                 )
 
                 storage.saveTasks(tasks)
