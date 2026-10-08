@@ -13,24 +13,33 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.personalplanner.app.model.Task
 import com.personalplanner.app.manager.TaskManager
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.runtime.key
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,27 +62,55 @@ fun TaskScreen(
     }
 
     val focusManager = LocalFocusManager.current
+    val listState = rememberLazyListState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     fun saveTask() {
         val text = newTaskText.value.trim()
 
-        if (text.isNotEmpty()) {
-            taskManager.addTask(text)
+        if (text.isEmpty()) {
+            isAddingTask.value = false
+            focusManager.clearFocus()
+            keyboardController?.hide()
+            return
         }
 
+        // Сначала закрываем клавиатуру и убираем фокус
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+
+        // Затем убираем поле ввода
         newTaskText.value = ""
         isAddingTask.value = false
+
+        // И только после этого добавляем задачу
+        taskManager.addTask(text)
     }
 
     LaunchedEffect(isAddingTask.value) {
         if (isAddingTask.value) {
+            val inputIndex = taskManager.getActiveTasks().size
+
+            listState.animateScrollToItem(inputIndex)
+
+            snapshotFlow {
+                listState.layoutInfo.visibleItemsInfo.any {
+                    it.index == inputIndex
+                }
+            }
+                .filter { it }
+                .first()
+
             focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
             .padding(16.dp)
     ) {
 
@@ -96,101 +133,97 @@ fun TaskScreen(
             }
         }
 
-        Column(
+        LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
         ) {
 
-            taskManager.getActiveTasks().forEach { task ->
+            items(
+                items = taskManager.getActiveTasks(),
+                key = { it.id }
+            ) { task ->
 
-                key(task.id) {
-
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = { value ->
-
-                            if (value == SwipeToDismissBoxValue.EndToStart) {
-
-                                taskManager.deleteTask(task.id)
-
-                                true
-                            } else {
-                                false
-                            }
+                val dismissState = rememberSwipeToDismissBoxState(
+                    confirmValueChange = { value ->
+                        if (value == SwipeToDismissBoxValue.EndToStart) {
+                            taskManager.deleteTask(task.id)
+                            true
+                        } else {
+                            false
                         }
-                    )
+                    }
+                )
 
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        backgroundContent = {
-                            // Пока пустой фон при свайпе
-                        }
+                SwipeToDismissBox(
+                    state = dismissState,
+                    backgroundContent = {
+                        // Пока пустой фон при свайпе
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 0.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-
-                        Row(
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .size(32.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-
                             Checkbox(
                                 checked = task.completed,
                                 onCheckedChange = { checked ->
-
                                     taskManager.setTaskCompleted(
                                         task.id,
                                         checked
                                     )
-                                }
-                            )
-
-                            Text(
-                                text = task.text,
-                                modifier = Modifier.padding(start = 8.dp),
-                                textDecoration = if (task.completed) {
-                                    TextDecoration.LineThrough
-                                } else {
-                                    TextDecoration.None
-                                }
+                                },
+                                modifier = Modifier.scale(0.7f)
                             )
                         }
+
+                        Text(
+                            text = task.text,
+                            modifier = Modifier.padding(start = 8.dp),
+                            fontSize = 18.sp,
+                            textDecoration = if (task.completed) {
+                                TextDecoration.LineThrough
+                            } else {
+                                TextDecoration.None
+                            }
+                        )
                     }
                 }
             }
 
             if (isAddingTask.value) {
+                item {
 
-                OutlinedTextField(
-                    value = newTaskText.value,
-                    onValueChange = {
-                        newTaskText.value = it
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-
-                            if (!focusState.isFocused &&
-                                newTaskText.value.isNotBlank()
-                            ) {
+                    OutlinedTextField(
+                        value = newTaskText.value,
+                        onValueChange = {
+                            newTaskText.value = it
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
+                        placeholder = {
+                            Text("Новая задача")
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
                                 saveTask()
                             }
-                        },
-                    placeholder = {
-                        Text("Новая задача")
-                    },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            saveTask()
-                            focusManager.clearFocus()
-                        }
+                        )
                     )
-                )
+                }
             }
         }
 

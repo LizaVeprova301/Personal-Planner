@@ -72,8 +72,17 @@ class TaskManager private constructor(
 
     fun setTaskCompleted(id: Long, completed: Boolean) {
         val index = tasks.indexOfFirst { it.id == id }
+
         if (index != -1) {
-            tasks[index] = tasks[index].copy(completed = completed)
+            tasks[index] = tasks[index].copy(
+                completed = completed,
+                completedAt = if (completed) {
+                    System.currentTimeMillis()
+                } else {
+                    null
+                }
+            )
+
             storage.saveTasks(tasks)
             updateWidget()
         }

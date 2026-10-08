@@ -22,6 +22,7 @@ class TaskStorage(
                 put("id", task.id)
                 put("text", task.text)
                 put("completed", task.completed)
+                put("completedAt", task.completedAt)
                 put("deleted", task.deleted)
                 put("deletedFromArchive", task.deletedFromArchive)
             }
@@ -49,6 +50,12 @@ class TaskStorage(
                     id = jsonObject.getLong("id"),
                     text = jsonObject.getString("text"),
                     completed = jsonObject.getBoolean("completed"),
+                    completedAt = if (jsonObject.has("completedAt")) {
+                        if (jsonObject.isNull("completedAt")) null
+                        else jsonObject.getLong("completedAt")
+                    } else {
+                        null
+                    },
                     deleted = jsonObject.getBoolean("deleted"),
                     deletedFromArchive = jsonObject.getBoolean("deletedFromArchive")
                 )
