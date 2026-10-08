@@ -46,7 +46,7 @@ class TaskManager private constructor(
         }
     }
 
-    fun getTasks(): List<Task> = tasks
+
     fun reloadTasks() {
         val savedTasks = storage.loadTasks()
 
@@ -97,7 +97,7 @@ class TaskManager private constructor(
         }
     }
 
-    fun deleteTaskFromArchive(id: Long) {
+    fun restoreTaskFromArchive(id: Long) {
         val index = tasks.indexOfFirst { it.id == id }
         if (index != -1) {
             tasks[index] = tasks[index].copy(

@@ -1,97 +1,78 @@
 package com.personalplanner.app.ui
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
-import com.personalplanner.app.manager.TaskManager
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.personalplanner.app.manager.TaskManager
+import com.personalplanner.app.ui.task.AddTaskField
+import com.personalplanner.app.ui.task.TaskRow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(
     taskManager: TaskManager,
-    onOpenArchive: () -> Unit
+    onOpenArchive: () -> Unit,
+    onOpenHabits: () -> Unit
 ) {
-
-
-    var isAddingTask = remember {
-        androidx.compose.runtime.mutableStateOf(false)
+    var isAddingTask by remember {
+        mutableStateOf(false)
     }
 
-    var newTaskText = remember {
-        androidx.compose.runtime.mutableStateOf("")
+    var newTaskText by remember {
+        mutableStateOf("")
     }
 
+    var isMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    val listState = rememberLazyListState()
     val focusRequester = remember {
         FocusRequester()
     }
 
     val focusManager = LocalFocusManager.current
-    val listState = rememberLazyListState()
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val keyboardController =
+        LocalSoftwareKeyboardController.current
 
-    fun saveTask() {
-        val text = newTaskText.value.trim()
+    LaunchedEffect(isAddingTask) {
 
-        if (text.isEmpty()) {
-            isAddingTask.value = false
-            focusManager.clearFocus()
-            keyboardController?.hide()
-            return
-        }
+        if (isAddingTask) {
 
-        // Сначала закрываем клавиатуру и убираем фокус
-        focusManager.clearFocus(force = true)
-        keyboardController?.hide()
+            val inputIndex =
+                taskManager.getActiveTasks().size
 
-        // Затем убираем поле ввода
-        newTaskText.value = ""
-        isAddingTask.value = false
-
-        // И только после этого добавляем задачу
-        taskManager.addTask(text)
-    }
-
-    LaunchedEffect(isAddingTask.value) {
-        if (isAddingTask.value) {
-            val inputIndex = taskManager.getActiveTasks().size
-
-            listState.animateScrollToItem(inputIndex)
+            listState.animateScrollToItem(
+                inputIndex
+            )
 
             snapshotFlow {
                 listState.layoutInfo.visibleItemsInfo.any {
@@ -105,7 +86,6 @@ fun TaskScreen(
             keyboardController?.show()
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -124,12 +104,46 @@ fun TaskScreen(
                 modifier = Modifier.weight(1f)
             )
 
-            Button(
-                onClick = {
-                    onOpenArchive()
+            Box {
+
+                IconButton(
+                    onClick = {
+                        isMenuExpanded = true
+                    }
+                ) {
+                    Text(
+                        text = "☰",
+                        fontSize = 24.sp
+                    )
                 }
-            ) {
-                Text("Архив")
+
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = {
+                        isMenuExpanded = false
+                    }
+                ) {
+
+                    DropdownMenuItem(
+                        text = {
+                            Text("Архив")
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onOpenArchive()
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = {
+                            Text("Привычки")
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onOpenHabits()
+                        }
+                    )
+                }
             }
         }
 
@@ -145,83 +159,28 @@ fun TaskScreen(
                 key = { it.id }
             ) { task ->
 
-                val dismissState = rememberSwipeToDismissBoxState(
-                    confirmValueChange = { value ->
-                        if (value == SwipeToDismissBoxValue.EndToStart) {
-                            taskManager.deleteTask(task.id)
-                            true
-                        } else {
-                            false
-                        }
-                    }
+                TaskRow(
+                    task = task,
+                    taskManager = taskManager
                 )
-
-                SwipeToDismissBox(
-                    state = dismissState,
-                    backgroundContent = {
-                        // Пока пустой фон при свайпе
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 0.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Checkbox(
-                                checked = task.completed,
-                                onCheckedChange = { checked ->
-                                    taskManager.setTaskCompleted(
-                                        task.id,
-                                        checked
-                                    )
-                                },
-                                modifier = Modifier.scale(0.7f)
-                            )
-                        }
-
-                        Text(
-                            text = task.text,
-                            modifier = Modifier.padding(start = 8.dp),
-                            fontSize = 18.sp,
-                            textDecoration = if (task.completed) {
-                                TextDecoration.LineThrough
-                            } else {
-                                TextDecoration.None
-                            }
-                        )
-                    }
-                }
             }
 
-            if (isAddingTask.value) {
+            if (isAddingTask) {
+
                 item {
 
-                    OutlinedTextField(
-                        value = newTaskText.value,
+                    AddTaskField(
+                        taskManager = taskManager,
+                        value = newTaskText,
                         onValueChange = {
-                            newTaskText.value = it
+                            newTaskText = it
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester),
-                        placeholder = {
-                            Text("Новая задача")
+                        onSaved = {
+                            isAddingTask = false
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
                         },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                saveTask()
-                            }
-                        )
+                        focusRequester = focusRequester
                     )
                 }
             }
@@ -230,8 +189,8 @@ fun TaskScreen(
         Button(
             onClick = {
 
-                if (!isAddingTask.value) {
-                    isAddingTask.value = true
+                if (!isAddingTask) {
+                    isAddingTask = true
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -239,5 +198,4 @@ fun TaskScreen(
             Text("+")
         }
     }
-
 }
