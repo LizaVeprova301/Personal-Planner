@@ -142,6 +142,28 @@ class TaskWidget : AppWidgetProvider() {
                     R.id.widgetTitle,
                     "Задачи"
                 )
+                val addIntent = Intent(
+                    context,
+                    com.personalplanner.app.MainActivity::class.java
+                ).apply {
+                    putExtra(
+                        "open_add_task",
+                        true
+                    )
+                }
+
+                val addPendingIntent = PendingIntent.getActivity(
+                    context,
+                    appWidgetId + 10000,
+                    addIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or
+                            PendingIntent.FLAG_IMMUTABLE
+                )
+
+                views.setOnClickPendingIntent(
+                    R.id.widgetAddButton,
+                    addPendingIntent
+                )
 
                 val serviceIntent = Intent(
                     context,
