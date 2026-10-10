@@ -1,0 +1,147 @@
+Folder PATH listing for volume Новый том
+Volume serial number is A0AC-4163
+D:\PERSONAL-PLANNER\APP\SRC
+├───androidTest
+│   └───java
+│       └───com
+│           └───personalplanner
+│               └───app
+│                       ExampleInstrumentedTest.kt
+│                       
+├───main
+│   │   AndroidManifest.xml
+│   │   ic_launcher-playstore.png
+│   │   
+│   ├───java
+│   │   └───com
+│   │       └───personalplanner
+│   │           └───app
+│   │               │   AppScreen.kt
+│   │               │   MainActivity.kt
+│   │               │   
+│   │               ├───core
+│   │               │       AppInitializer.kt
+│   │               │       AppLifecycleObserver.kt
+│   │               │       AppManagers.kt
+│   │               │       DateChangeReceiver.kt
+│   │               │       
+│   │               ├───manager
+│   │               │       HabitManager.kt
+│   │               │       TaskManager.kt
+│   │               │       
+│   │               ├───model
+│   │               │       Habit.kt
+│   │               │       Task.kt
+│   │               │       Topic.kt
+│   │               │       
+│   │               ├───storage
+│   │               │       HabitStorage.kt
+│   │               │       TaskStorage.kt
+│   │               │       TopicStorage.kt
+│   │               │       
+│   │               ├───ui
+│   │               │   │   ArchiveScreen.kt
+│   │               │   │   HabitScreen.kt
+│   │               │   │   TaskScreen.kt
+│   │               │   │   
+│   │               │   ├───archive
+│   │               │   │       ArchiveDay.kt
+│   │               │   │       ArchivedTaskRow.kt
+│   │               │   │       
+│   │               │   ├───habit
+│   │               │   │       AddHabitField.kt
+│   │               │   │       HabitHistory.kt
+│   │               │   │       HabitRow.kt
+│   │               │   │       
+│   │               │   ├───task
+│   │               │   │       AddTaskField.kt
+│   │               │   │       TaskRow.kt
+│   │               │   │       
+│   │               │   └───theme
+│   │               │           Color.kt
+│   │               │           Theme.kt
+│   │               │           Type.kt
+│   │               │           
+│   │               └───widget
+│   │                       HabitWidget.kt
+│   │                       HabitWidgetConfigActivity.kt
+│   │                       HabitWidgetStorage.kt
+│   │                       MultiHabitWidget.kt
+│   │                       MultiHabitWidgetConfigActivity.kt
+│   │                       MultiHabitWidgetStorage.kt
+│   │                       TaskWidget.kt
+│   │                       TaskwidgetService.kt
+│   │                       
+│   └───res
+│       ├───drawable
+│       │       corgi_cool.png
+│       │       corgi_cool_v1.png
+│       │       corgi_sad.png
+│       │       corgi_tired.png
+│       │       habit_widget_title_background.xml
+│       │       icon.png
+│       │       ic_fire_gray.xml
+│       │       ic_launcher_background.xml
+│       │       ic_launcher_foreground.xml
+│       │       multi_habit_item_background.xml
+│       │       multi_habit_item_completed.xml
+│       │       scroodge.png
+│       │       scroodge_sad.png
+│       │       
+│       ├───layout
+│       │       habit_widget.xml
+│       │       multi_habit_item.xml
+│       │       multi_habit_widget.xml
+│       │       task_widget.xml
+│       │       task_widget_item.xml
+│       │       widget_loading.xml
+│       │       
+│       ├───mipmap-anydpi
+│       ├───mipmap-anydpi-v26
+│       │       ic_launcher.xml
+│       │       ic_launcher_round.xml
+│       │       
+│       ├───mipmap-hdpi
+│       │       ic_launcher.webp
+│       │       ic_launcher_foreground.webp
+│       │       ic_launcher_round.webp
+│       │       
+│       ├───mipmap-mdpi
+│       │       ic_launcher.webp
+│       │       ic_launcher_foreground.webp
+│       │       ic_launcher_round.webp
+│       │       
+│       ├───mipmap-xhdpi
+│       │       ic_launcher.webp
+│       │       ic_launcher_foreground.webp
+│       │       ic_launcher_round.webp
+│       │       
+│       ├───mipmap-xxhdpi
+│       │       ic_launcher.webp
+│       │       ic_launcher_foreground.webp
+│       │       ic_launcher_round.webp
+│       │       
+│       ├───mipmap-xxxhdpi
+│       │       ic_launcher.webp
+│       │       ic_launcher_foreground.webp
+│       │       ic_launcher_round.webp
+│       │       
+│       ├───values
+│       │       colors.xml
+│       │       strings.xml
+│       │       themes.xml
+│       │       
+│       └───xml
+│               backup_rules.xml
+│               data_extraction_rules.xml
+│               habit_widget_info.xml
+│               multi_habit_widget_info.xml
+│               task_widget_info.xml
+│               
+└───test
+    └───java
+        └───com
+            └───personalplanner
+                └───app
+                        ExampleUnitTest.kt
+                        

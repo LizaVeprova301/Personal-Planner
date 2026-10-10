@@ -25,6 +25,7 @@ class TaskStorage(
                 put("completedAt", task.completedAt)
                 put("deleted", task.deleted)
                 put("deletedFromArchive", task.deletedFromArchive)
+                put("topicId", task.topicId)
             }
 
             jsonArray.put(jsonObject)
@@ -32,36 +33,63 @@ class TaskStorage(
 
         preferences.edit()
             .putString("tasks", jsonArray.toString())
-            .commit()
+            .apply()
     }
+
 
     fun loadTasks(): List<Task> {
         val json = preferences.getString("tasks", null)
             ?: return emptyList()
 
-        val jsonArray = JSONArray(json)
-        val tasks = mutableListOf<Task>()
+        return runCatching {
+            val jsonArray = JSONArray(json)
 
-        for (i in 0 until jsonArray.length()) {
-            val jsonObject = jsonArray.getJSONObject(i)
+            buildList {
+                for (i in 0 until jsonArray.length()) {
+                    val jsonObject = jsonArray.optJSONObject(i) ?: continue
 
-            tasks.add(
-                Task(
-                    id = jsonObject.getLong("id"),
-                    text = jsonObject.getString("text"),
-                    completed = jsonObject.getBoolean("completed"),
-                    completedAt = if (jsonObject.has("completedAt")) {
-                        if (jsonObject.isNull("completedAt")) null
-                        else jsonObject.getLong("completedAt")
-                    } else {
-                        null
-                    },
-                    deleted = jsonObject.getBoolean("deleted"),
-                    deletedFromArchive = jsonObject.getBoolean("deletedFromArchive")
-                )
-            )
+                    val id = jsonObject.optLong("id", -1L)
+                    val text = jsonObject.optString("text", "").trim()
+
+                    if (id < 0L || text.isEmpty()) continue
+
+                    add(
+                        Task(
+                            id = id,
+                            text = text,
+                            completed = jsonObject.optBoolean("completed", false),
+                            completedAt = if (
+                                jsonObject.has("completedAt") &&
+                                !jsonObject.isNull("completedAt")
+                            ) {
+                                jsonObject.optLong("completedAt")
+                            } else {
+                                null
+                            },
+                            deleted = jsonObject.optBoolean("deleted", false),
+                            deletedFromArchive = jsonObject.optBoolean(
+                                "deletedFromArchive",
+                                false
+                            ),
+                            topicId = if (
+                                jsonObject.has("topicId") &&
+                                !jsonObject.isNull("topicId")
+                            ) {
+                                jsonObject.optLong("topicId")
+                            } else {
+                                null
+                            }
+                        )
+                    )
+                }
+            }
+        }.getOrElse {
+            emptyList()
         }
-
-        return tasks
     }
+
+    fun hasSavedTasks(): Boolean {
+        return preferences.contains("tasks")
+    }
+
 }

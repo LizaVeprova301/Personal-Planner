@@ -6,5 +6,6 @@ data class Task(
     val completed: Boolean = false,
     val completedAt: Long? = null,
     val deleted: Boolean = false,
-    val deletedFromArchive: Boolean = false
+    val deletedFromArchive: Boolean = false,
+    val topicId: Long? = null
 )

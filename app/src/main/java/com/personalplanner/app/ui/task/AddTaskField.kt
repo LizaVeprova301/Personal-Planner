@@ -11,13 +11,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import com.personalplanner.app.manager.TaskManager
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.layout.onGloballyPositioned
 
 @Composable
 fun AddTaskField(
     taskManager: TaskManager,
+    topicId: Long? = null,
     value: String,
     onValueChange: (String) -> Unit,
     onSaved: () -> Unit,
+    modifier: Modifier = Modifier,
+    onBoundsChanged: (androidx.compose.ui.geometry.Rect) -> Unit,
     focusRequester: FocusRequester
 ) {
     fun saveTask() {
@@ -28,7 +35,7 @@ fun AddTaskField(
             return
         }
 
-        taskManager.addTask(text)
+        taskManager.addTask(text, topicId)
 
         onValueChange("")
         onSaved()
@@ -37,9 +44,13 @@ fun AddTaskField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = Modifier
+        textStyle = TextStyle(color = Color.Black),
+        modifier = modifier
             .fillMaxWidth()
-            .focusRequester(focusRequester),
+            .focusRequester(focusRequester)
+            .onGloballyPositioned {
+                onBoundsChanged(it.boundsInRoot())
+            },
         placeholder = {
             Text("Новая задача")
         },
@@ -53,4 +64,5 @@ fun AddTaskField(
             }
         )
     )
+
 }

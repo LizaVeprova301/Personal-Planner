@@ -6,6 +6,7 @@ import android.content.Context
 import android.widget.RemoteViews
 import com.personalplanner.app.R
 import com.personalplanner.app.manager.HabitManager
+import com.personalplanner.app.storage.HabitWidgetStorage
 
 class HabitWidget : AppWidgetProvider() {
     override fun onReceive(
@@ -28,9 +29,14 @@ class HabitWidget : AppWidgetProvider() {
                 .getHabitId(appWidgetId)
                 ?: return
 
+
             com.personalplanner.app.manager.HabitManager
                 .getInstance(context)
                 .toggleToday(habitId)
+
+            updateAll(context)
+            MultiHabitWidget.updateAll(context)
+
         }
     }
 

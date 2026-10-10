@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1F1F1F">
+
+    <ImageView
+        android:id="@+id/multiHabitCorgi"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/corgi_sad"
+        android:contentDescription="Корги" />
+
+
+    <LinearLayout
+        android:id="@+id/multiHabitFlameHappy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:translationY="-16dp"
+        android:translationX="-16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="80dp">
+
+                <TextView
+                    android:id="@+id/multiHabitFlameIcon"
+                    android:layout_width="60dp"
+                    android:layout_height="80dp"
+                    android:layout_gravity="top|center_horizontal"
+                    android:gravity="center"
+                    android:text="🔥"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/multiHabitStreak"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:text="0"
+                    android:textColor="#870000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-black"
+                    android:includeFontPadding="false" />
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/multiHabitStreakLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-10dp"
+            android:layout_marginTop="5dp"
+            android:text="ДОМОЙ"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:maxWidth="100dp" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/multiHabitFlameSad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:translationY="-16dp"
+        android:translationX="6dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="3dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="15dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="88dp">
+
+                <ImageView
+                    android:id="@+id/multiHabitFlameSadIcon"
+                    android:layout_width="72dp"
+                    android:layout_height="88dp"
+                    android:src="@drawable/ic_fire_gray"
+                    android:tint="#BDBDBD"
+                    android:scaleType="centerInside"
+                    android:scaleX="1.4"
+                    android:scaleY="1.4"
+                    android:contentDescription="Серая серия" />
+
+                <TextView
+                    android:id="@+id/multiHabitStreakSad"
+                    android:layout_width="wrap_content"
+                    android:visibility="gone"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:text="0"
+                    android:textColor="#FF0000"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-black"
+                    android:includeFontPadding="false" />
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/multiHabitStreakSadLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-20dp"
+            android:layout_marginTop="0dp"
+            android:text="СЛАБО?"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:maxWidth="100dp" />
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:id="@+id/multiHabitList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:id="@+id/multiHabitRow1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/multiHabitRow2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+</FrameLayout>

@@ -6,25 +6,30 @@ import android.os.Bundle
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.personalplanner.app.manager.HabitManager
+import com.personalplanner.app.storage.HabitWidgetStorage
 
 class HabitWidgetConfigActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         val appWidgetId = intent.getIntExtra(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID
         )
 
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            finish()
+            return
+        }
+
         setResult(RESULT_CANCELED)
+
 
         val habitManager = HabitManager.getInstance(this)
         val habits = habitManager.getHabits()
-        android.util.Log.d(
-            "HabitWidgetConfig",
-            "Habits count: ${habits.size}"
-        )
+
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
