@@ -34,7 +34,24 @@ import com.personalplanner.app.ui.task.TaskRow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.key
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Arrangement
 
 @Composable
 fun TaskScreen(
@@ -49,12 +66,30 @@ fun TaskScreen(
     var newTaskText by remember {
         mutableStateOf("")
     }
+    var selectedTopicId by remember {
+        mutableStateOf<Long?>(null)
+    }
+    var inputBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    var containerBounds by remember {
+        mutableStateOf<androidx.compose.ui.geometry.Rect?>(null)
+    }
 
     var isMenuExpanded by remember {
         mutableStateOf(false)
     }
+    var isAddingTopic by remember {
+        mutableStateOf(false)
+    }
+
+    var colorPickerTopicId by remember { mutableStateOf<Long?>(null) }
+
+
+    var newTopicName by remember {
+        mutableStateOf("")
+    }
 
     val listState = rememberLazyListState()
+    val topics = taskManager.getTopics()
     val focusRequester = remember {
         FocusRequester()
     }
@@ -63,35 +98,71 @@ fun TaskScreen(
     val keyboardController =
         LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(isAddingTask) {
 
+    LaunchedEffect(isAddingTask, selectedTopicId) {
         if (isAddingTask) {
-
-            val inputIndex =
-                taskManager.getActiveTasks().size
-
-            listState.animateScrollToItem(
-                inputIndex
-            )
-
-            snapshotFlow {
-                listState.layoutInfo.visibleItemsInfo.any {
-                    it.index == inputIndex
-                }
+            val topicIndex = topics.indexOfFirst {
+                it.id == selectedTopicId
             }
-                .filter { it }
-                .first()
 
-            focusRequester.requestFocus()
-            keyboardController?.show()
+            if (topicIndex >= 0) {
+                listState.animateScrollToItem(topicIndex)
+
+                snapshotFlow {
+                    listState.layoutInfo.visibleItemsInfo.any {
+                        it.index == topicIndex
+                    }
+                }
+                    .filter { it }
+                    .first()
+
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
         }
     }
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .imePadding()
             .padding(16.dp)
+            .onGloballyPositioned {
+                containerBounds = it.boundsInRoot()
+            }
+            .pointerInput(isAddingTask, inputBounds) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(
+                        requireUnconsumed = false,
+                        pass = PointerEventPass.Initial
+                    )
+                    val up = waitForUpOrCancellation(
+                        pass = PointerEventPass.Initial
+                    )
+
+                    if (up != null && isAddingTask) {
+                        val position = down.position
+                        val bounds = inputBounds
+
+                        val container = containerBounds
+
+                        if (bounds == null || container == null ||
+                            !bounds.contains(
+                                androidx.compose.ui.geometry.Offset(
+                                    position.x + container.left,
+                                    position.y + container.top
+                                )
+                            )
+                        ) {
+                            isAddingTask = false
+                            newTaskText = ""
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }
+                    }
+                }
+            }
     ) {
 
         Row(
@@ -143,6 +214,17 @@ fun TaskScreen(
                             onOpenHabits()
                         }
                     )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Создать тему")
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            newTopicName = ""
+                            isAddingTopic = true
+                        }
+                    )
+
                 }
             }
         }
@@ -155,41 +237,96 @@ fun TaskScreen(
         ) {
 
             items(
-                items = taskManager.getActiveTasks(),
-                key = { it.id }
-            ) { task ->
+                items = topics,
+                key = { "topic_${it.id}" }
+            ) { topic ->
 
-                TaskRow(
-                    task = task,
-                    taskManager = taskManager
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp)
                 )
-            }
+                {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
 
-            if (isAddingTask) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    colorPickerTopicId = topic.id
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .background(
+                                        color = Color(topic.color),
+                                        shape = RoundedCornerShape(10.dp)
+                                    )
+                            )
+                        }
 
-                item {
 
-                    AddTaskField(
-                        taskManager = taskManager,
-                        value = newTaskText,
-                        onValueChange = {
-                            newTaskText = it
-                        },
-                        onSaved = {
-                            isAddingTask = false
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                        },
-                        focusRequester = focusRequester
-                    )
+                        Text(
+                            text = topic.name,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp),
+                            fontSize = 24.sp
+                        )
+
+                        IconButton(
+                            onClick = {
+                                selectedTopicId = topic.id
+                                isAddingTask = true
+                                newTaskText = ""
+                            }
+                        ) {
+                            Text("+", fontSize = 24.sp)
+                        }
+                    }
+
+                    taskManager.getActiveTasksByTopic(topic.id).forEach { task ->
+                        key(task.id) {
+                            TaskRow(
+                                task = task,
+                                taskManager = taskManager
+                            )
+                        }
+                    }
+
+                    if (isAddingTask && selectedTopicId == topic.id) {
+                        AddTaskField(
+                            taskManager = taskManager,
+                            topicId = selectedTopicId,
+                            value = newTaskText,
+                            onValueChange = {
+                                newTaskText = it
+                            },
+                            onSaved = {
+                                isAddingTask = false
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            },
+                            onBoundsChanged = {
+                                inputBounds = it
+                            },
+                            focusRequester = focusRequester
+                        )
+                    }
+
                 }
             }
         }
 
         Button(
             onClick = {
-
                 if (!isAddingTask) {
+                    selectedTopicId = topics.find { it.name == "Общее" }?.id
                     isAddingTask = true
                 }
             },
@@ -198,4 +335,117 @@ fun TaskScreen(
             Text("+")
         }
     }
+
+    if (colorPickerTopicId != null) {
+        val topicId = colorPickerTopicId!!
+
+        val colors = listOf(
+            0xFF9E9E9E,
+            0xFFE57373,
+            0xFFFFB74D,
+            0xFFFFD54F,
+            0xFF81C784,
+            0xFF4DB6AC,
+            0xFF4FC3F7,
+            0xFF7986CB,
+            0xFFBA68C8,
+            0xFFF06292
+        )
+
+        AlertDialog(
+            onDismissRequest = {
+                colorPickerTopicId = null
+            },
+            title = {
+                Text("Цвет темы")
+            },
+            text = {
+                Column {
+                    colors.chunked(5).forEach { rowColors ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            rowColors.forEach { color ->
+                                Box(
+                                    modifier = Modifier
+                                        .padding(6.dp)
+                                        .size(32.dp)
+                                        .background(
+                                            color = Color(color),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable {
+                                            taskManager.setTopicColor(
+                                                topicId,
+                                                color
+                                            )
+                                            colorPickerTopicId = null
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        colorPickerTopicId = null
+                    }
+                ) {
+                    Text("Закрыть")
+                }
+            }
+        )
+    }
+
+
+    if (isAddingTopic) {
+        AlertDialog(
+            onDismissRequest = {
+                isAddingTopic = false
+                newTopicName = ""
+            },
+            title = {
+                Text("Новая тема")
+            },
+            text = {
+                OutlinedTextField(
+                    value = newTopicName,
+                    onValueChange = { newTopicName = it },
+                    label = { Text("Название темы") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newTopicName.isNotBlank()) {
+                            taskManager.addTopic(
+                                name = newTopicName,
+                                color = 0xFF9E9E9E
+                            )
+                            isAddingTopic = false
+                            newTopicName = ""
+                        }
+                    },
+                    enabled = newTopicName.isNotBlank()
+                ) {
+                    Text("Создать")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        isAddingTopic = false
+                        newTopicName = ""
+                    }
+                ) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
+
 }

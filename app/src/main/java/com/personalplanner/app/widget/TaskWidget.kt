@@ -17,12 +17,6 @@ class TaskWidget : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        super.onUpdate(
-            context,
-            appWidgetManager,
-            appWidgetIds
-        )
-
         updateWidgets(
             context,
             appWidgetManager,
@@ -141,6 +135,23 @@ class TaskWidget : AppWidgetProvider() {
                 views.setTextViewText(
                     R.id.widgetTitle,
                     "Задачи"
+                )
+                val openAppIntent = Intent(
+                    context,
+                    com.personalplanner.app.MainActivity::class.java
+                )
+
+                val openAppPendingIntent = PendingIntent.getActivity(
+                    context,
+                    appWidgetId + 20000,
+                    openAppIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or
+                            PendingIntent.FLAG_IMMUTABLE
+                )
+
+                views.setOnClickPendingIntent(
+                    R.id.widgetRoot,
+                    openAppPendingIntent
                 )
                 val addIntent = Intent(
                     context,

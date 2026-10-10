@@ -4,7 +4,6 @@
     android:minWidth="180dp"
     android:minHeight="100dp"
     android:updatePeriodMillis="0"
-    android:initialLayout="@layout/habit_widget"
+    android:initialLayout="@layout/task_widget"
     android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen"
-    android:configure="com.personalplanner.app.widget.HabitWidgetConfigActivity" />
+    android:widgetCategory="home_screen" />

@@ -18,7 +18,9 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.foundation.layout.Box
-
+import com.personalplanner.app.widget.HabitWidget
+import com.personalplanner.app.widget.MultiHabitWidget
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,11 +30,14 @@ fun HabitRow(
     isExpanded: Boolean,
     onToggleExpanded: () -> Unit
 ) {
+    val context = LocalContext.current
     val dismissState =
         rememberSwipeToDismissBoxState(
             confirmValueChange = { value ->
                 if (value == SwipeToDismissBoxValue.EndToStart) {
+                    MultiHabitWidget.removeHabitFromAllWidgets(context, habit.id)
                     habitManager.deleteHabit(habit.id)
+                    MultiHabitWidget.updateAll(context)
                     true
                 } else {
                     false
@@ -89,6 +94,8 @@ fun HabitRow(
                     modifier = Modifier
                         .clickable {
                             habitManager.toggleToday(habit.id)
+                            HabitWidget.updateAll(context)
+                            MultiHabitWidget.updateAll(context)
                         }
                         .padding(end = 12.dp)
                 )

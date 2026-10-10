@@ -81,66 +81,42 @@ class HabitManager private constructor(
 
         val today = LocalDate.now().toString()
 
-        val habit = habits.firstOrNull {
-            it.id == id
-        } ?: return false
+        val habit = findActiveHabit(id) ?: return false
 
         return habit.completions.any {
             it.date == today
         }
     }
 
+
     fun toggleToday(id: Long) {
-
-        val index = habits.indexOfFirst {
-            it.id == id
-        }
-
+        val index = habits.indexOfFirst { it.id == id }
         if (index == -1) return
 
         val habit = habits[index]
-
         val today = LocalDate.now().toString()
 
-        val alreadyCompleted = habit.completions.any {
-            it.date == today
+        val alreadyCompleted = habit.completions.any { it.date == today }
+
+        val newCompletions = if (alreadyCompleted) {
+            habit.completions.filter { it.date != today }
+        } else {
+            habit.completions + HabitCompletion(date = today)
         }
 
-        val newCompletions =
-            if (alreadyCompleted) {
-
-                habit.completions.filter {
-                    it.date != today
-                }
-
-            } else {
-
-                habit.completions + HabitCompletion(
-                    date = today
-                )
-            }
-
-        habits[index] = habit.copy(
-            completions = newCompletions
-        )
-
+        habits[index] = habit.copy(completions = newCompletions)
         save()
-
-        HabitWidget.updateAll(context)
     }
+
     fun getCurrentStreak(id: Long): Int {
 
-        val habit = habits.firstOrNull {
-            it.id == id
-        } ?: return 0
+        val habit = findActiveHabit(id) ?: return 0
 
         if (habit.completions.isEmpty()) {
             return 0
         }
 
-        val completedDates = habit.completions
-            .map { LocalDate.parse(it.date) }
-            .toSet()
+        val completedDates = getCompletedDates(habit)
 
         val today = LocalDate.now()
         val yesterday = today.minusDays(1)
@@ -163,14 +139,9 @@ class HabitManager private constructor(
     }
     fun getStreaks(id: Long): List<Pair<LocalDate, LocalDate>> {
 
-        val habit = habits.firstOrNull {
-            it.id == id
-        } ?: return emptyList()
+        val habit = findActiveHabit(id) ?: return emptyList()
 
-        val dates = habit.completions
-            .map { LocalDate.parse(it.date) }
-            .distinct()
-            .sorted()
+        val dates = getCompletedDates(habit).sorted()
 
         if (dates.isEmpty()) {
             return emptyList()
@@ -202,15 +173,25 @@ class HabitManager private constructor(
     }
     fun getTotalCompletedDays(id: Long): Int {
 
-        val habit = habits.firstOrNull {
-            it.id == id
-        } ?: return 0
+        val habit = findActiveHabit(id) ?: return 0
 
-        return habit.completions
-            .map { it.date }
-            .distinct()
-            .size
+        return getCompletedDates(habit).size
     }
+
+    private fun getCompletedDates(habit: Habit): Set<LocalDate> {
+        return habit.completions.mapNotNull { completion ->
+            runCatching {
+                LocalDate.parse(completion.date)
+            }.getOrNull()
+        }.toSet()
+    }
+
+    private fun findActiveHabit(id: Long): Habit? {
+        return habits.firstOrNull {
+            it.id == id && !it.deleted
+        }
+    }
+
 
     private fun save() {
         storage.saveHabits(habits)

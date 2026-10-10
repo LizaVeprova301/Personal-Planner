@@ -6,92 +6,80 @@ import com.personalplanner.app.model.HabitCompletion
 import org.json.JSONArray
 import org.json.JSONObject
 
-class HabitStorage(
-    context: Context
-) {
+class HabitStorage(context: Context) {
 
-    private val preferences = context.getSharedPreferences(
+    private val prefs = context.getSharedPreferences(
         "habit_storage",
         Context.MODE_PRIVATE
     )
 
-    companion object {
-        private const val KEY_HABITS = "habits"
-    }
-
     fun saveHabits(habits: List<Habit>) {
-
         val jsonArray = JSONArray()
 
         habits.forEach { habit ->
-
-            val jsonObject = JSONObject().apply {
+            val json = JSONObject().apply {
                 put("id", habit.id)
                 put("name", habit.name)
                 put("createdAt", habit.createdAt)
                 put("deleted", habit.deleted)
 
                 val completionsArray = JSONArray()
-
                 habit.completions.forEach { completion ->
-                    completionsArray.put(completion.date)
+                    completionsArray.put(
+                        JSONObject().put("date", completion.date)
+                    )
                 }
-
                 put("completions", completionsArray)
             }
 
-            jsonArray.put(jsonObject)
+            jsonArray.put(json)
         }
 
-        preferences
-            .edit()
-            .putString(KEY_HABITS, jsonArray.toString())
+        prefs.edit()
+            .putString("habits", jsonArray.toString())
             .apply()
     }
 
     fun loadHabits(): List<Habit> {
+        val raw = prefs.getString("habits", null) ?: return emptyList()
 
-        val jsonString = preferences.getString(
-            KEY_HABITS,
-            null
-        ) ?: return emptyList()
+        return runCatching {
+            val jsonArray = JSONArray(raw)
+            buildList {
+                for (i in 0 until jsonArray.length()) {
+                    val json = jsonArray.optJSONObject(i) ?: continue
+                    val id = json.optLong("id", -1L)
+                    val name = json.optString("name", "").trim()
 
-        val jsonArray = JSONArray(jsonString)
+                    if (id < 0L || name.isEmpty()) continue
 
-        val habits = mutableListOf<Habit>()
+                    val completionsArray =
+                        json.optJSONArray("completions") ?: JSONArray()
 
-        for (i in 0 until jsonArray.length()) {
+                    val completions = buildList {
+                        for (j in 0 until completionsArray.length()) {
+                            val completion =
+                                completionsArray.optJSONObject(j) ?: continue
+                            val date = completion.optString("date", "")
+                            if (date.isNotBlank()) {
+                                add(HabitCompletion(date))
+                            }
+                        }
+                    }
 
-            val jsonObject = jsonArray.getJSONObject(i)
-
-            val completions = mutableListOf<HabitCompletion>()
-
-            val completionsArray =
-                jsonObject.optJSONArray("completions")
-                    ?: JSONArray()
-
-            for (j in 0 until completionsArray.length()) {
-                completions.add(
-                    HabitCompletion(
-                        date = completionsArray.getString(j)
+                    add(
+                        Habit(
+                            id = id,
+                            name = name,
+                            createdAt = json.optLong("createdAt", 0L),
+                            deleted = json.optBoolean("deleted", false),
+                            completions = completions
+                        )
                     )
-                )
+                }
             }
-
-            habits.add(
-                Habit(
-                    id = jsonObject.getLong("id"),
-                    name = jsonObject.getString("name"),
-                    createdAt = jsonObject.getLong("createdAt"),
-                    deleted = jsonObject.optBoolean(
-                        "deleted",
-                        false
-                    ),
-                    completions = completions
-                )
-            )
+        }.getOrElse {
+            emptyList()
         }
-
-        return habits
     }
 }

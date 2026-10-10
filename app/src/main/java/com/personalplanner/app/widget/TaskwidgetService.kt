@@ -5,6 +5,7 @@ import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.personalplanner.app.R
 import com.personalplanner.app.storage.TaskStorage
+import com.personalplanner.app.model.Task
 
 class TaskWidgetService : RemoteViewsService() {
 
@@ -19,7 +20,7 @@ class TaskWidgetFactory(
     private val context: android.content.Context
 ) : RemoteViewsService.RemoteViewsFactory {
 
-    private var tasks = emptyList<com.personalplanner.app.model.Task>()
+    private var tasks = emptyList<Task>()
 
     override fun onCreate() {
         loadTasks()
