@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Personal Planner</string>
+    <string name="task_widget_name">Задачи</string>
+    <string name="habit_widget_name">Привычка</string>
 </resources>

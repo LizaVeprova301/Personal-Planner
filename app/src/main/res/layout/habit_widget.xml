@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1F1F1F">
+
+    <ImageView
+        android:id="@+id/habitWidgetBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/corgi_sad"
+        android:contentDescription="Корги" />
+
+    <TextView
+        android:id="@+id/habitWidgetTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:background="@drawable/habit_widget_title_background"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <LinearLayout
+        android:id="@+id/habitWidgetFlame"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true">
+
+        <FrameLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp">
+
+            <ImageView
+                android:id="@+id/habitWidgetFlameGray"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_fire_gray"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:id="@+id/habitWidgetFlameActive"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="🔥"
+                android:textSize="18sp"
+                android:gravity="center" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/habitWidgetStreak"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:translationX="-12dp"
+            android:textColor="#800000"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+</FrameLayout>
